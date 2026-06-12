@@ -14,4 +14,12 @@ xano-apollo-webflow-engine/
 └── sheets/
     └── sheets-setup.md         ← Google Sheets output layer
 
-# xano-apollo-webflow-engine
+
+## Repo Structure
+
+  flow/               Full system map and data field reference
+  scripts/            Apollo tracking snippet — paste into Webflow head
+  xano/               Xano agent function stack instructions
+  webflow/            Webflow deployment and verification steps
+  sheets/             Google Sheets setup and Xano → Sheets write config
+
