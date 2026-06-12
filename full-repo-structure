@@ -1,25 +1,18 @@
-Full Repo Structure
 xano-apollo-webflow-engine/
 ├── README.md
 ├── .gitignore
 ├── Makefile
 ├── flow/
-│   └── engine-flow.md          ← the full system map
+│   └── engine-flow.md
 ├── scripts/
 │   └── apollo-head-snippet.html
 ├── xano/
-│   └── agent-instructions.md
+│   ├── agent-instructions.md
+│   └── claude-agent-instructions.md
 ├── webflow/
 │   └── deployment-notes.md
-└── sheets/
-    └── sheets-setup.md         ← Google Sheets output layer
-
-
-## Repo Structure
-
-  flow/               Full system map and data field reference
-  scripts/            Apollo tracking snippet — paste into Webflow head
-  xano/               Xano agent function stack instructions
-  webflow/            Webflow deployment and verification steps
-  sheets/             Google Sheets setup and Xano → Sheets write config
-
+├── sheets/
+│   └── sheets-setup.md
+└── strategy/                        ← ADD THIS FOLDER
+    ├── icp-and-outbound.md          ← ICP filters + sequence strategy
+    └── intent-scoring-setup.md      ← Apollo page intent config
