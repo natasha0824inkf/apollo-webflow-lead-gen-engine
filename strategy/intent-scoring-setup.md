@@ -1,9 +1,9 @@
 # Apollo Intent Scoring Setup
-# xano-apollo-webflow-engine / XYZ
+# xano.io-apollo-webflow-engine / XYZ
 
 ---
 
-## What This Does
+## What This Engine Does
 
 Tells Apollo which pages on XYZ's site indicate strong buying intent.
 Visitors to high-intent pages get flagged automatically so the Xano
