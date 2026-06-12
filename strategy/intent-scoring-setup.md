@@ -86,3 +86,13 @@ agent can prioritize them in the Google Sheet output.
   - If XYZ runs paid ads to a landing page, add that URL as High intent
   - Intent scoring works at company level on all plans and at person
     level on paid plans for U.S.-based visitors
+
+      Suggested high-intent pages to create if not already live:
+
+  /results or /case-studies     → savd.clothing, treatmedy.com stories
+  /services                     → email flows, SMS, consulting breakdown
+  /pricing or /work-with-us     → even a "let's talk" page counts
+  /ecommerce-email-agency       → SEO landing page, high intent if visited
+
+  These pages pull in organic traffic AND give Apollo strong
+  intent signals when someone reads them.
