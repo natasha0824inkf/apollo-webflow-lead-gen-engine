@@ -19,11 +19,10 @@ xano-apollo-webflow-engine/
 └── sheets/
     └── sheets-setup.md         ← Google Sheets output layer
 
-# xano-apollo-webflow-engine
+# xan.io-apollo-webflow-engine
 
-Webflow → Apollo.io visitor tracking engine for XYZ. Identifies companies
-hitting the site, enriches contact data via Apollo API through a Xano agent,
-and writes qualified leads to Google Sheets automatically.
+Webflow → Apollo.io visitor tracking engine for XYZ small biz. 
+Identifies companies hitting the site, enriches contact data via Apollo API through a Xano agent, and writes qualified leads to Google Sheets automatically.
 
 ---
 
@@ -41,7 +40,7 @@ a CRM or waiting on marketing.
 ## System Flow
 
   Webflow (live site)
-      ↓  Apollo tracking script fires on page load
+      ↓  Apollo tracking script (head) fires on page load 
   Apollo.io
       ↓  logs company + intent data
   Xano Agent (scheduled daily)
@@ -54,7 +53,7 @@ a CRM or waiting on marketing.
       ↓  append new rows via Google Sheets API
   Sales team picks up from here
 
----
+-
 
 ## Repo Structure
 
