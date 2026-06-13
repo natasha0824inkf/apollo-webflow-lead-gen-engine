@@ -10,17 +10,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Trigger Xano apollo_lead_enrichment
-        run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" \
-            -X POST "${{ secrets.XANO_ENRICHMENT_URL }}" \
-            -H "Content-Type: application/json")
+      - uses: actions/checkout@v4
 
-          echo "Response status: $response"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-          if [ "$response" -ge 200 ] && [ "$response" -lt 300 ]; then
-            echo "✓ Enrichment triggered successfully"
-          else
-            echo "✗ Enrichment failed with status $response"
-            exit 1
-          fi
+      - name: Install dependencies
+        working-directory: scripts
+        run: npm install
+
+      - name: Run Apollo enrichment
+        working-directory: scripts
+        env:
+          APOLLO_API_KEY: ${{ secrets.APOLLO_API_KEY }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: node apollo-enrich.js

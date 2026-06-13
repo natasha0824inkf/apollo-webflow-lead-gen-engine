@@ -1,0 +1,9 @@
+{
+  "name": "apollo-enrich",
+  "version": "1.0.0",
+  "description": "Apollo → Google Sheets lead enrichment — runs via GitHub Actions cron",
+  "main": "apollo-enrich.js",
+  "dependencies": {
+    "googleapis": "^144.0.0"
+  }
+}
