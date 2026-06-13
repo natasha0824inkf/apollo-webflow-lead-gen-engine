@@ -1,0 +1,14 @@
+# Secrets — never commit these
+.env
+*.env
+secrets.json
+service-account-key.json
+*credentials*.json
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/
