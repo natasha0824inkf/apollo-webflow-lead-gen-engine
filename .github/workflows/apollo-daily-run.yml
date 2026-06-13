@@ -1,0 +1,26 @@
+name: Apollo Lead Enrichment — Daily Run
+
+on:
+  schedule:
+    - cron: "0 7 * * *"   # 7:00 AM UTC daily
+  workflow_dispatch:        # allow manual trigger from GitHub Actions tab
+
+jobs:
+  run-enrichment:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Xano apollo_lead_enrichment
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "${{ secrets.XANO_ENRICHMENT_URL }}" \
+            -H "Content-Type: application/json")
+
+          echo "Response status: $response"
+
+          if [ "$response" -ge 200 ] && [ "$response" -lt 300 ]; then
+            echo "✓ Enrichment triggered successfully"
+          else
+            echo "✗ Enrichment failed with status $response"
+            exit 1
+          fi

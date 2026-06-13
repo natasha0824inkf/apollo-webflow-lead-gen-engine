@@ -94,6 +94,26 @@ XYZ's Webflow site fires the Apollo tracking script on every page load. Apollo i
 
 ---
 
+## Scheduling (GitHub Actions)
+
+The Xano enrichment function runs daily via a GitHub Actions cron job.
+
+  Schedule: 7:00 AM UTC every day
+  Workflow: .github/workflows/apollo-daily-run.yml
+  Trigger: POST to Xano endpoint (URL stored in GitHub secret)
+  Manual run: GitHub → Actions → Apollo Lead Enrichment → Run workflow
+
+Required GitHub secret:
+
+  XANO_ENRICHMENT_URL → https://x8ki-letl-twmt.n7.xano.io/api:apollo/run-apollo-enrichment
+
+To add the secret:
+  GitHub repo → Settings → Secrets and variables → Actions → New repository secret
+  Name: XANO_ENRICHMENT_URL
+  Value: https://x8ki-letl-twmt.n7.xano.io/api:apollo/run-apollo-enrichment
+
+---
+
 ## Notes
 
   - Do not edit the Apollo snippet manually — Apollo manages it
