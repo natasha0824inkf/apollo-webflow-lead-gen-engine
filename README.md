@@ -1,12 +1,12 @@
 # xano-apollo-webflow-engine
 
-Email marketing agency lead engine for XYZ. Identifies companies visiting the site via Apollo.io, enriches contact data through a Xano agent, and writes qualified leads to Google Sheets automatically.
+Lead engine for agencyjr.com. Identifies companies visiting the site via Apollo.io, enriches contact and firmographic data, and writes qualified leads to Google Sheets automatically via GitHub Actions.
 
 ---
 
 ## How It Works
 
-XYZ's Webflow site fires the Apollo tracking script on every page load. Apollo identifies which companies are visiting and what they're looking at. A Xano agent runs daily, pulls that visitor list from Apollo's API, enriches each company with contact-level data and firmographic data, scores them by intent, and writes the results straight into a Google Sheet — ready for outreach.
+The Webflow site fires the Apollo tracking script on every page load. Apollo identifies which companies are visiting and what they're looking at. A GitHub Actions cron job runs daily, pulls that visitor list from Apollo's API, enriches each company with contact-level data and firmographic data, scores them by intent, and writes the results straight into a Google Sheet — ready for outreach.
 
 ---
 
@@ -16,14 +16,12 @@ XYZ's Webflow site fires the Apollo tracking script on every page load. Apollo i
       ↓  Apollo tracking script fires on every page load
   Apollo.io
       ↓  identifies company + contact + intent level
-  Xano Agent (daily background task)
+  GitHub Actions (daily cron — 7AM UTC)
       ↓  GET /v1/website_visitors
       ↓  POST /v1/people/search (enrich contacts)
       ↓  POST /v1/organizations/enrich (enrich company data)
       ↓  score intent: high / medium / low
-  Xano DB (leads table)
-      ↓  write enriched records
-  Google Sheets (XYZ Leads)
+  Google Sheets (AJR Leads)
       ↓  append rows via Sheets API
   Sales team reviews and acts
 
@@ -32,22 +30,21 @@ XYZ's Webflow site fires the Apollo tracking script on every page load. Apollo i
 ## Repo Structure
 
   flow/               Full system map and data field reference
-  scripts/            Apollo tracking snippet — paste into Webflow head
+  scripts/            Apollo enrichment script (Node.js) + tracking snippet
   strategy/           ICP, outbound sequences, and intent scoring config
-  xano/               Xano agent function stack instructions
   webflow/            Webflow deployment and verification steps
-  sheets/             Google Sheets setup and Xano → Sheets write config
+  sheets/             Google Sheets setup and column reference
 
 ---
 
 ## Prerequisites
 
-  - Apollo.io account (paid plan for contact-level tracking)
-  - Apollo API key stored in Xano env vars as APOLLO_API_KEY
+  - Apollo.io account (paid plan for Website Visitors API access)
+  - Apollo API key with Website Visitors scope enabled
   - Webflow site with Site Settings access
   - Google Cloud Service Account with Sheets API enabled
   - Google Sheet created and shared with the service account email
-  - XYZ's live domain added in Apollo under Website Visitors
+  - agencyjr.com added in Apollo under Website Visitors
 
 ---
 
@@ -65,10 +62,14 @@ XYZ's Webflow site fires the Apollo tracking script on every page load. Apollo i
   4. Set up Google Sheet
      See sheets/sheets-setup.md
 
-  5. Configure Xano agent
-     See xano/agent-instructions.md
+  5. Add GitHub secrets (repo → Settings → Secrets and variables → Actions)
 
-  6. Run make check to confirm all connections are live
+     APOLLO_API_KEY             → Apollo API key (Website Visitors scope required)
+     GOOGLE_SHEET_ID            → ID from Sheet URL between /d/ and /edit
+     GOOGLE_SERVICE_ACCOUNT_JSON → full contents of service account JSON file (one line)
+
+  6. Trigger manually to test
+     GitHub → Actions → Apollo Lead Enrichment — Daily Run → Run workflow
 
 ---
 
@@ -77,40 +78,29 @@ XYZ's Webflow site fires the Apollo tracking script on every page load. Apollo i
   Script not registering in Apollo?
   → Published to staging instead of live domain — republish to live
 
-  track_request returning 400?
-  → Hit Apollo's domain limit (3 domains on free plan)
-  → Remove an unused domain or upgrade
-
-  Xano API calls returning 401?
+  Apollo 401?
   → API key expired — regenerate in Apollo → Settings → Integrations → API Keys
-  → Update value in Xano env vars
+  → Update APOLLO_API_KEY in GitHub secrets
+
+  Apollo 404 on /v1/website_visitors?
+  → API key does not have Website Visitors scope — create a new key with that scope enabled
+  → Or plan does not include Website Visitors API — upgrade in Apollo billing
 
   Rows not appearing in Google Sheet?
-  → Check that the sheet is shared with the Google service account email
-  → Confirm GOOGLE_JSON_KEY and GOOGLE_SHEET_ID are correct in Xano env vars
+  → Confirm sheet is shared with the service account email (Editor access)
+  → Confirm GOOGLE_SHEET_ID is correct (string between /d/ and /edit in the Sheet URL)
+  → Confirm GOOGLE_SERVICE_ACCOUNT_JSON is the full JSON on a single line
 
-  Rate limit (429) in Xano?
-  → Add a 1–2 second Delay step between loop iterations
+  Rate limit (429)?
+  → The script already waits 1.5 seconds between visitors — increase sleep() if needed
 
 ---
 
-## Scheduling (GitHub Actions)
-
-The Xano enrichment function runs daily via a GitHub Actions cron job.
+## Scheduling
 
   Schedule: 7:00 AM UTC every day
   Workflow: .github/workflows/apollo-daily-run.yml
-  Trigger: POST to Xano endpoint (URL stored in GitHub secret)
-  Manual run: GitHub → Actions → Apollo Lead Enrichment → Run workflow
-
-Required GitHub secret:
-
-  XANO_ENRICHMENT_URL → https://x8ki-letl-twmt.n7.xano.io/api:apollo/run-apollo-enrichment
-
-To add the secret:
-  GitHub repo → Settings → Secrets and variables → Actions → New repository secret
-  Name: XANO_ENRICHMENT_URL
-  Value: https://x8ki-letl-twmt.n7.xano.io/api:apollo/run-apollo-enrichment
+  Manual run: GitHub → Actions → Apollo Lead Enrichment — Daily Run → Run workflow
 
 ---
 
@@ -119,5 +109,4 @@ To add the secret:
   - Do not edit the Apollo snippet manually — Apollo manages it
   - The script goes in <head>, not <body>
   - Contact-level tracking covers U.S.-based visitors on paid Apollo plans
-  - All API keys live in Xano env vars — never hardcode them anywhere
-  - Run the Xano agent as a Background Task — foreground will timeout on large datasets
+  - Never hardcode API keys — all secrets live in GitHub Actions secrets
