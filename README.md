@@ -1,6 +1,6 @@
 # xano-apollo-webflow-engine
 
-Lead engine for agencyjr.com. Identifies companies visiting the site via Apollo.io, enriches contact and firmographic data, and writes qualified leads to Google Sheets automatically via GitHub Actions.
+Lead engine for a small biz. Identifies companies visiting the site via Apollo.io, enriches contact and firmographic data, and writes qualified leads to Google Sheets automatically via GitHub Actions.
 
 ---
 
@@ -44,7 +44,7 @@ The Webflow site fires the Apollo tracking script on every page load. Apollo ide
   - Webflow site with Site Settings access
   - Google Cloud Service Account with Sheets API enabled
   - Google Sheet created and shared with the service account email
-  - agencyjr.com added in Apollo under Website Visitors
+  - xyzcompany.com added in Apollo under Website Visitors
 
 ---
 
