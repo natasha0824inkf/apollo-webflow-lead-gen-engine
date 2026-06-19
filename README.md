@@ -1,36 +1,37 @@
-# apollo-webflow-engine
+# xano-apollo-webflow-engine
 
-Lead engine for a small biz. Identifies companies visiting the site via Apollo.io, enriches contact and firmographic data, and writes qualified leads to Google Sheets automatically via GitHub Actions.
+Lead enrichment engine — Apollo visitor tracking → Google Sheets via GitHub Actions.
 
 ---
 
 ## How It Works
 
-The Webflow site fires the Apollo tracking script on every page load. Apollo identifies which companies are visiting and what they're looking at. A GitHub Actions cron job runs daily, pulls that visitor list from Apollo's API, enriches each company with contact-level data and firmographic data, scores them by intent, and writes the results straight into a Google Sheet — ready for outreach.
+Apollo tracking script fires on every Webflow page load. A GitHub Actions cron job runs daily, pulls the visitor list from Apollo’s API, enriches each company with contact and firmographic data, scores by intent, and appends rows to Google Sheets.
 
 ---
 
 ## System Flow
 
-  Webflow (live site)
-      ↓  Apollo tracking script fires on every page load
+  Webflow
+      ↓  Apollo tracking script fires on page load
   Apollo.io
-      ↓  identifies company + contact + intent level
+      ↓  identifies company + intent level
   GitHub Actions (daily cron — 7AM UTC)
       ↓  GET /v1/website_visitors
       ↓  POST /v1/people/search (enrich contacts)
       ↓  POST /v1/organizations/enrich (enrich company data)
       ↓  score intent: high / medium / low
-  Google Sheets (AJR Leads)
+  Google Sheets
       ↓  append rows via Sheets API
-  Sales team reviews and acts
 
 ---
 
 ## Repo Structure
 
+  config/             Query config for alternative lead source scripts
   flow/               Full system map and data field reference
-  scripts/            Apollo enrichment script (Node.js) + tracking snippet
+  input/              Seed files for CSV-based enrichment
+  scripts/            Enrichment scripts (Node.js) + Apollo tracking snippet
   strategy/           ICP, outbound sequences, and intent scoring config
   webflow/            Webflow deployment and verification steps
   sheets/             Google Sheets setup and column reference
@@ -43,8 +44,7 @@ The Webflow site fires the Apollo tracking script on every page load. Apollo ide
   - Apollo API key with Website Visitors scope enabled
   - Webflow site with Site Settings access
   - Google Cloud Service Account with Sheets API enabled
-  - Google Sheet created and shared with the service account email
-  - xyzcompany.com added in Apollo under Website Visitors
+  - Google Sheet shared with the service account email
 
 ---
 
@@ -57,56 +57,92 @@ The Webflow site fires the Apollo tracking script on every page load. Apollo ide
      Site Settings → Custom Code → Head Code → paste → Save → Publish (live domain only)
 
   3. Verify connection
-     Apollo → Website Visitors → Settings → Test Connection → wait for "Active"
+     Apollo → Website Visitors → Settings → Test Connection → wait for “Active”
 
-  4. Set up Google Sheet
-     See sheets/sheets-setup.md
+  4. Set up Google Sheet — see sheets/sheets-setup.md
 
   5. Add GitHub secrets (repo → Settings → Secrets and variables → Actions)
 
-     APOLLO_API_KEY             → Apollo API key (Website Visitors scope required)
-     GOOGLE_SHEET_ID            → ID from Sheet URL between /d/ and /edit
-     GOOGLE_SERVICE_ACCOUNT_JSON → full contents of service account JSON file (one line)
+     APOLLO_API_KEY              → Apollo API key (Website Visitors scope required)
+     GOOGLE_SHEET_ID             → ID from Sheet URL between /d/ and /edit
+     GOOGLE_SERVICE_ACCOUNT_JSON → full service account JSON on a single line
 
   6. Trigger manually to test
      GitHub → Actions → Apollo Lead Enrichment — Daily Run → Run workflow
 
 ---
 
-## Troubleshooting
+## Branches
 
-  Script not registering in Apollo?
-  → Published to staging instead of live domain — republish to live
+  main                  Primary pipeline — Apollo visitors → Google Sheets
+  feat/alt-lead-sources Option 2: BuiltWith export enrichment
+                        Option 3: CSV seed enrichment (works without visitor API)
+  feat/chaos-scrape     No-API lead sourcing via Reddit + Google Custom Search
+
+---
+
+## Alternative Lead Sources
+
+### Option 3 — CSV seed (scripts/enrich-from-csv.js)
+
+Add domains to input/domains.csv, run node scripts/enrich-from-csv.js.
+Enriches via Apollo people/search + organizations/enrich. No visitor API needed.
+
+Good seed sources:
+  - Meta/TikTok ad libraries (filter by geo)
+  - DTC newsletters (Retail Brew, 2PM, The Hustle)
+  - LinkedIn search filtered by industry + geography
+  - Brands found via niche browsing
+
+### Option 2 — BuiltWith export (scripts/builtwith-enrich.js)
+
+Export Klaviyo technology list from builtwith.com, save as input/builtwith-export.csv.
+Script filters for Shopify + target geos, enriches via Apollo, writes to Sheets.
+Requires BuiltWith paid plan (~$50/mo).
+
+### Chaos scrape — no APIs (scripts/google-stack-hunter.js)
+
+Zero dependencies. Reddit JSON API (no key) + optional Google Custom Search (100/day free).
+Finds intent signals in ecom communities, scrapes contact pages for emails.
+Output: output/leads.csv
+
+  node scripts/google-stack-hunter.js            # Reddit only
+  node scripts/google-stack-hunter.js --google   # + Google CSE
+  node scripts/google-stack-hunter.js --sheets   # + write to Sheets
+
+---
+
+## Troubleshooting
 
   Apollo 401?
   → API key expired — regenerate in Apollo → Settings → Integrations → API Keys
   → Update APOLLO_API_KEY in GitHub secrets
 
   Apollo 404 on /v1/website_visitors?
-  → API key does not have Website Visitors scope — create a new key with that scope enabled
-  → Or plan does not include Website Visitors API — upgrade in Apollo billing
+  → Key does not have Website Visitors scope — create a new key with that scope
+  → Or plan does not include Website Visitors API — check billing
+  → See issue #6 for re-enable checklist
 
   Rows not appearing in Google Sheet?
-  → Confirm sheet is shared with the service account email (Editor access)
-  → Confirm GOOGLE_SHEET_ID is correct (string between /d/ and /edit in the Sheet URL)
-  → Confirm GOOGLE_SERVICE_ACCOUNT_JSON is the full JSON on a single line
+  → Confirm sheet is shared with service account email (Editor access)
+  → Confirm GOOGLE_SHEET_ID is the string between /d/ and /edit in the URL
+  → Confirm GOOGLE_SERVICE_ACCOUNT_JSON is full JSON on a single line
 
   Rate limit (429)?
-  → The script already waits 1.5 seconds between visitors — increase sleep() if needed
+  → Script waits 1.5s between visitors — increase sleep() in the script if needed
 
 ---
 
 ## Scheduling
 
-  Schedule: 7:00 AM UTC every day
+  Schedule: 7:00 AM UTC daily (currently paused — see issue #6)
   Workflow: .github/workflows/apollo-daily-run.yml
-  Manual run: GitHub → Actions → Apollo Lead Enrichment — Daily Run → Run workflow
+  Manual:   GitHub → Actions → Apollo Lead Enrichment — Daily Run → Run workflow
 
 ---
 
 ## Notes
 
-  - Do not edit the Apollo snippet manually — Apollo manages it
-  - The script goes in <head>, not <body>
-  - Contact-level tracking covers U.S.-based visitors on paid Apollo plans
+  - Apollo snippet goes in <head>, not <body>
   - Never hardcode API keys — all secrets live in GitHub Actions secrets
+  - Contact-level tracking is US-biased on Apollo — EU visitors get company-level only
