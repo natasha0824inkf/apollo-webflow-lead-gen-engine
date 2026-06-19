@@ -1,9 +1,9 @@
 name: Apollo Lead Enrichment — Daily Run
 
 on:
-  schedule:
-    - cron: "0 7 * * *"   # 7:00 AM UTC daily
-  workflow_dispatch:        # allow manual trigger from GitHub Actions tab
+  # schedule:
+  #   - cron: "0 7 * * *"   # paused — re-enable once Apollo API key has Website Visitors scope
+  workflow_dispatch:        # manual trigger only until Apollo key is updated
 
 jobs:
   run-enrichment:
