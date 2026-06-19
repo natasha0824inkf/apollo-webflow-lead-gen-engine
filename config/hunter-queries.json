@@ -1,0 +1,19 @@
+{
+  "reddit": {
+    "subreddits": ["shopify", "ecommerce", "klaviyo", "entrepreneur", "smallbusiness", "dtc"],
+    "intent_keywords": ["email agency", "klaviyo help", "email flows", "abandoned cart", "email marketing", "retention", "email revenue", "klaviyo expert", "email sequence", "flows not working", "low open rate", "email not converting"],
+    "filter_keywords": ["recommend", "looking for", "help", "advice", "best", "hire", "agency", "struggling", "need", "fix", "improve"]
+  },
+  "google": {
+    "queries": [
+      "site:myshopify.com klaviyo \"United Kingdom\"",
+      "site:myshopify.com klaviyo \"Sweden\" OR \"Denmark\" OR \"Norway\" OR \"Finland\"",
+      "site:myshopify.com klaviyo \"Netherlands\" OR \"Germany\"",
+      "site:myshopify.com klaviyo \"Estonia\" OR \"Latvia\" OR \"Lithuania\"",
+      "klaviyo shopify brand \"email marketing\" site:linkedin.com/company"
+    ],
+    "note": "Requires GOOGLE_CSE_API_KEY + GOOGLE_CSE_ID (free: 100 queries/day). Get at: console.developers.google.com"
+  },
+  "contact_paths": ["/contact", "/contact-us", "/pages/contact", "/help", "/about", "/pages/about"],
+  "output": "output/leads.csv"
+}
