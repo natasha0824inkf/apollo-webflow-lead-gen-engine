@@ -1,0 +1,56 @@
+name: Chaos Lead Scraper — Reddit + Google
+
+on:
+  workflow_dispatch:
+    inputs:
+      use_google:
+        description: 'Include Google CSE search (requires GOOGLE_CSE_API_KEY + GOOGLE_CSE_ID secrets)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+      write_to_sheets:
+        description: 'Append results to Google Sheets (requires GOOGLE_SHEET_ID + GOOGLE_SERVICE_ACCOUNT_JSON secrets)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: scripts
+        run: npm install
+
+      - name: Run chaos scraper
+        working-directory: scripts
+        env:
+          GOOGLE_CSE_API_KEY: ${{ secrets.GOOGLE_CSE_API_KEY }}
+          GOOGLE_CSE_ID: ${{ secrets.GOOGLE_CSE_ID }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          ARGS=""
+          if [ "${{ inputs.use_google }}" = "true" ]; then ARGS="$ARGS --google"; fi
+          if [ "${{ inputs.write_to_sheets }}" = "true" ]; then ARGS="$ARGS --sheets"; fi
+          node google-stack-hunter.js $ARGS
+
+      - name: Upload leads CSV
+        uses: actions/upload-artifact@v4
+        with:
+          name: leads-${{ github.run_number }}
+          path: output/leads.csv
+          if-no-files-found: warn
