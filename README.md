@@ -138,6 +138,12 @@ Reddit JSON API (no key) + optional Google Custom Search (100/day free).
 Finds intent signals in ecom communities, scrapes contact pages for emails.
 Output: output/leads.csv
 
+Run from GitHub (no local Node.js needed):
+  GitHub → Actions → Chaos Lead Scraper — Reddit + Google → Run workflow
+  Toggle "Include Google CSE" and "Write to Sheets" as needed.
+  Results download as a zip artifact (leads.csv) once the run completes.
+
+Or run locally if Node 20+ is installed:
   node scripts/google-stack-hunter.js            # Reddit only
   node scripts/google-stack-hunter.js --google   # + Google CSE
   node scripts/google-stack-hunter.js --sheets   # + write to Sheets
